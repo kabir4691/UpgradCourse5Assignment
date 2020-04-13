@@ -5,3 +5,6 @@
 quora-api/target/
 quora-db/target/
 quora-service/target/
+
+# DB configuration
+quora-db/src/main/resources/config/localhost.properties
