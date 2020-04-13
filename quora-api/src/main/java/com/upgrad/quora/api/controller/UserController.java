@@ -66,4 +66,16 @@ public class UserController {
         headers.add("access-token", userAuthEntity.getAccessToken());
         return new ResponseEntity<SigninResponse>(signinResponse, headers, HttpStatus.OK);
     }
+
+    @RequestMapping(method = RequestMethod.POST, path = "/signout", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<SignoutResponse> signout(@RequestHeader("authorization") final String authorization) throws AuthenticationFailedException {
+
+        String accessToken = authorization.split("Bearer ")[1];
+        UserAuthEntity userAuthEntity = authenticationService.authenticateForSignout(accessToken);
+        UserEntity user = userAuthEntity.getUserId();
+
+        SignoutResponse signoutResponse = new SignoutResponse().id(user.getUuid())
+                .message("SIGNED OUT SUCCESSFULLY");
+        return new ResponseEntity<SignoutResponse>(signoutResponse, HttpStatus.OK);
+    }
 }

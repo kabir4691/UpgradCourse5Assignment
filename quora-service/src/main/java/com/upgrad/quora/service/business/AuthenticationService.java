@@ -44,4 +44,18 @@ public class AuthenticationService {
 
         return userAuth;
     }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public UserAuthEntity authenticateForSignout(final String accessToken) throws AuthenticationFailedException {
+        UserAuthEntity userAuthEntity = userDao.getUserAuth(accessToken);
+        if (userAuthEntity == null) {
+            throw new AuthenticationFailedException("SGR-001", "User is not Signed in");
+        }
+
+        UserEntity userEntity = userAuthEntity.getUserId();
+        userAuthEntity.setLogoutAt(ZonedDateTime.now());
+        userDao.updateUser(userEntity);
+
+        return userAuthEntity;
+    }
 }
