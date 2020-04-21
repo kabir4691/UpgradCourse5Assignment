@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Base64;
 import java.util.UUID;
 
 @RestController
@@ -52,11 +51,10 @@ public class UserController {
     @RequestMapping(method = RequestMethod.POST, path = "/signin", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<SigninResponse> signin(@RequestHeader("authorization") final String authorization) throws AuthenticationFailedException {
 
-        byte[] decode = Base64.getDecoder().decode(authorization.split("Basic ")[1]);
-        String decodedText = new String(decode);
-        String[] decodedArray = decodedText.split(":");
+        String credentials = authorization.split("Basic ")[1];
+        String[] credentialsArray = credentials.split(":");
 
-        UserAuthEntity userAuthEntity = authenticationService.authenticateForSignin(decodedArray[0], decodedArray[1]);
+        UserAuthEntity userAuthEntity = authenticationService.authenticateForSignin(credentialsArray[0], credentialsArray[1]);
         UserEntity userEntity = userAuthEntity.getUserId();
 
         SigninResponse signinResponse = new SigninResponse().id(userEntity.getUuid())
