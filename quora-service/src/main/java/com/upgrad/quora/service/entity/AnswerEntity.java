@@ -1,10 +1,13 @@
 package com.upgrad.quora.service.entity;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "answer", schema = "public")
@@ -24,19 +27,20 @@ public class AnswerEntity implements Serializable {
     @Size(max = 255)
     private String ans;
 
+
     @Column(name = "DATE")
-    private Date date;
+    private ZonedDateTime date;
 
 
     @NotNull
     @ManyToOne
-    @Column(name = "ID")
+    @JoinColumn(name = "USER_ID")
     private UserEntity userId;
 
 
     @NotNull
     @ManyToOne
-    @Column(name = "ID")
+    @JoinColumn(name = "QUESTION_ID")
     private QuestionEntity questionId;
 
     public UserEntity getUserId() {
@@ -71,19 +75,34 @@ public class AnswerEntity implements Serializable {
         this.ans = ans;
     }
 
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
     public QuestionEntity getQuestionId() {
         return questionId;
     }
 
     public void setQuestionId(QuestionEntity questionId) {
         this.questionId = questionId;
+    }
+
+    public ZonedDateTime getDate() {
+        return date;
+    }
+
+    public void setDate(ZonedDateTime date) {
+        this.date = date;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return new EqualsBuilder().append(this, obj).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(this).hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "AnswerEntity[id=" + getId() + ",uuid=" + getUuid() + "]";
     }
 }
