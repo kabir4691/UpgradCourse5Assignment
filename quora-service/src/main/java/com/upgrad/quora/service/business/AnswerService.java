@@ -61,7 +61,6 @@ public class AnswerService {
      * @throws AnswerNotFoundException
      */
     public boolean isUserOwnerOfTheAnswer(String answerId, String userId) throws AnswerNotFoundException {
-        AnswerEntity answer = getAnswer(answerId);
-        return answer.getUserId().getUuid().equals(userId);
+        return getAnswer(answerId).getUserId().getUuid().equals(userId);
     }
 }

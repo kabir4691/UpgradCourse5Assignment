@@ -1,22 +1,20 @@
 package com.upgrad.quora.api.controller;
 
-import com.upgrad.quora.api.model.QuestionRequest;
-import com.upgrad.quora.api.model.QuestionResponse;
+import com.upgrad.quora.api.model.*;
 import com.upgrad.quora.service.business.AuthenticationService;
 import com.upgrad.quora.service.business.QuestionService;
 import com.upgrad.quora.service.entity.QuestionEntity;
 import com.upgrad.quora.service.entity.UserAuthEntity;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
+import com.upgrad.quora.service.exception.InvalidQuestionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -50,4 +48,70 @@ public class QuestionController {
         QuestionResponse questionResponse = new QuestionResponse().id(questionPosted.getUuid()).status("QUESTION CREATED");
         return new ResponseEntity<QuestionResponse>(questionResponse, HttpStatus.CREATED);
     }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/all", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<QuestionDetailsResponse> getAll(@RequestHeader("authorization") final String authorization) {
+
+        String accessToken = authorization.split("Bearer")[1];
+        // Get Currently logged in user
+        final UserAuthEntity userAuthEntity = authService.getUserAuthEntity(accessToken);
+
+        //TODO: Add validation "User is signed out.Sign in first to create an question
+
+        final List<QuestionEntity> allQuestions = questionService.getAllQuestions();
+
+        QuestionDetailsResponse questionDetailsResponse = new QuestionDetailsResponse();
+
+        // TODO: Returns all questions
+
+    }
+
+    @RequestMapping(method = RequestMethod.PUT, path = "/edit/{questionId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<QuestionEditResponse> edit(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId, final QuestionEditRequest questionEditRequest) throws AuthenticationFailedException, InvalidQuestionException {
+        String accessToken = authorization.split("Bearer")[1];
+        // Get Currently logged in user
+        final UserAuthEntity userAuthEntity = authService.getUserAuthEntity(accessToken);
+
+        //TODO: Add validation "User is signed out.Sign in first to edit question
+
+        // Checking the ownership of the question
+        if (!questionService.isUserOwnerOfTheQuestrion(questionId, userAuthEntity.getUserId().getUuid())) {
+            throw new AuthenticationFailedException("ATHR-003", "Only the question owner can edit the question");
+        }
+
+        // Checking question is existence
+        if (!questionService.isQuestionExist(questionId)) {
+            throw new InvalidQuestionException("QUES-001", "Entered question uuid does not exist");
+        }
+
+        QuestionEntity updateQuestionEntity = questionService.getQuestionByQuestionId(questionId);
+        updateQuestionEntity.setDate(ZonedDateTime.now());
+        updateQuestionEntity.setContent(questionEditRequest.getContent());
+
+        final QuestionEntity questionEdited = questionService.submitQuestion(updateQuestionEntity);
+        QuestionEditResponse questionEditedResponse = new QuestionEditResponse().id(questionEdited.getUuid()).status("QUESTION EDITED");
+        return new ResponseEntity<QuestionEditResponse>(questionEditedResponse, HttpStatus.CREATED);
+
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, path = "/delete", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<QuestionDeleteResponse> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) throws AuthenticationFailedException, InvalidQuestionException {
+
+        String accessToken = authorization.split("Bearer")[1];
+        // Get Currently logged in user
+        final UserAuthEntity userAuthEntity = authService.getUserAuthEntity(accessToken);
+
+        //TODO: Add validation "User is signed out.Sign in first to edit question
+
+        // Checking the ownership of the question
+        if (!questionService.isUserOwnerOfTheQuestrion(questionId, userAuthEntity.getUserId().getUuid())) {
+            throw new AuthenticationFailedException("ATHR-003", "Only the question owner can delete the question");
+        }
+
+        // Delete question
+        questionService.deleteQuestion(questionId);
+        QuestionDeleteResponse questionDeleteResponse = new QuestionDeleteResponse().id(questionId).status("QUESTION DELETED");
+        return new ResponseEntity<QuestionDeleteResponse>(questionDeleteResponse, HttpStatus.OK);
+    }
+
 }
