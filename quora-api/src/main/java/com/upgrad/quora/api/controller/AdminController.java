@@ -29,7 +29,7 @@ public class AdminController {
         ErrorResponse errorResponse = new ErrorResponse();
 
         try{
-            String accessToken = authorization.split("Bearer ")[1];
+            String accessToken = authorization;
             authenticationService.authenticateForUserDelete(accessToken);
 
             final UserEntity userEntity = userAdminService.getUserByID(userUuid);
@@ -43,7 +43,7 @@ public class AdminController {
             return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.NOT_FOUND);
         } catch(AuthorizationFailedException e){
             errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
-            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.FORBIDDEN);
         } catch (Exception e){
             errorResponse.code("400").message("Bad Request").rootCause("Bad Request");
             return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.BAD_REQUEST);

@@ -25,7 +25,6 @@ public class UserAdminService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     public UserEntity deleteUser(final UserEntity userEntity) throws UserNotFoundException {
-
         UserEntity deletedUser = userDao.deleteUser(userEntity);
         return deletedUser;
     }
