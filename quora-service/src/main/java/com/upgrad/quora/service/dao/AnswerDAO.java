@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.persistence.PersistenceContext;
-import java.util.List;
 
 @Repository
 public class AnswerDAO {
@@ -36,7 +35,7 @@ public class AnswerDAO {
     /**
      * Update answer
      *
-     * @param answerId
+     * @param answerEntity
      * @return AnswerEntity
      */
     public AnswerEntity updateAnswer(AnswerEntity answerEntity) {
