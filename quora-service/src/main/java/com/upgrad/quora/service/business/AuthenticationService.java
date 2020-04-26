@@ -72,4 +72,22 @@ public class AuthenticationService {
         }
         return userAuthEntity;
     }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public UserAuthEntity authenticateForUserDelete(final String accessToken) throws AuthorizationFailedException {
+        UserAuthEntity userAuthEntity = userDao.getUserAuth(accessToken);
+        if (userAuthEntity == null) {
+            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+        }
+
+        if(userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())){
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out");
+        }
+
+        UserEntity userEntity = userAuthEntity.getUserId();
+        if(userEntity.getRole().equalsIgnoreCase("nonadmin")){
+            throw new AuthorizationFailedException("ATHR-003", "Unauthorized Access, Entered user is not an admin");
+        }
+        return userAuthEntity;
+    }
 }
