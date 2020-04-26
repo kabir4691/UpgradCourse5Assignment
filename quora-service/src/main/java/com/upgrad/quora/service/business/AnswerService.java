@@ -17,8 +17,8 @@ public class AnswerService {
      *
      * @param answerEntity
      */
-    public void submitAnswer(AnswerEntity answerEntity) {
-        answerDAO.submitAnswer(answerEntity);
+    public AnswerEntity submitAnswer(AnswerEntity answerEntity) {
+        return answerDAO.submitAnswer(answerEntity);
     }
 
     /**

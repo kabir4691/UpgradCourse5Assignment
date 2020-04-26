@@ -98,4 +98,12 @@ public class AuthenticationService {
         }
         return userAuthEntity;
     }
+
+    public UserAuthEntity getUserEntity(final String accessToken) throws AuthenticationFailedException {
+        UserAuthEntity userAuthEntity = userDao.getUserAuth(accessToken);
+        if (userAuthEntity == null) {
+            throw new AuthenticationFailedException("SGR-001", "User is not Signed in");
+        }
+        return userAuthEntity;
+    }
 }
