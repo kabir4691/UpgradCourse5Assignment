@@ -14,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -48,9 +47,9 @@ public class QuestionController {
         QuestionResponse questionResponse = new QuestionResponse().id(questionPosted.getUuid()).status("QUESTION CREATED");
         return new ResponseEntity<QuestionResponse>(questionResponse, HttpStatus.CREATED);
     }
-
+/*
     @RequestMapping(method = RequestMethod.GET, path = "/all", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionDetailsResponse> getAll(@RequestHeader("authorization") final String authorization) {
+    public ResponseEntity<QuestionDetailsResponse> getAll(@RequestHeader("authorization") final String authorization) throws AuthenticationFailedException {
 
         String accessToken = authorization.split("Bearer")[1];
         // Get Currently logged in user
@@ -65,6 +64,8 @@ public class QuestionController {
         // TODO: Returns all questions
 
     }
+    */
+
 
     @RequestMapping(method = RequestMethod.PUT, path = "/edit/{questionId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<QuestionEditResponse> edit(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId, final QuestionEditRequest questionEditRequest) throws AuthenticationFailedException, InvalidQuestionException {
