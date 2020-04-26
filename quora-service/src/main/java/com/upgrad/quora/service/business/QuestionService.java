@@ -6,11 +6,18 @@ import com.upgrad.quora.service.exception.InvalidQuestionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+import javax.persistence.PersistenceContext;
+
 @Service
 public class QuestionService {
 
     @Autowired
     private QuestionDAO questionDAO;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     /**
      * Returns QuestionEntity by question ID
@@ -35,5 +42,23 @@ public class QuestionService {
      */
     public boolean isQuestionExist(String questionId) {
         return questionDAO.getQuestionByQuestionId(questionId) != null;
+    }
+
+    /**
+     * Submits user question
+     *
+     * @param questionEntity
+     * @return QuestionEntity
+     */
+    public QuestionEntity submitQuestion(QuestionEntity questionEntity) {
+        EntityTransaction transaction = entityManager.getTransaction();
+        try {
+            transaction.begin();
+            entityManager.merge(questionEntity);
+            transaction.commit();
+        } catch (Exception e) {
+            transaction.rollback();
+        }
+        return questionEntity;
     }
 }
