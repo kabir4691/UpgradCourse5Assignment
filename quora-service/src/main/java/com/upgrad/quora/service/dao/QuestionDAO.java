@@ -19,7 +19,7 @@ public class QuestionDAO {
      * @param questionId
      * @return QuestionEntity
      */
-    public QuestionEntity getQuestionByQuestionId(Integer questionId) {
+    public QuestionEntity getQuestionByQuestionId(String questionId) {
         try {
             return entityManager.createNamedQuery("questionByQuestionId", QuestionEntity.class).setParameter("question_id", questionId).getSingleResult();
         } catch (NoResultException nre) {
