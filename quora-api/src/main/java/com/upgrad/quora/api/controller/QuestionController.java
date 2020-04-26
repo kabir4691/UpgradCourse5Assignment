@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -44,12 +46,14 @@ public class QuestionController {
         questionEntity.setUserId(userAuthEntity.getUserId());
 
         final QuestionEntity questionPosted = questionService.submitQuestion(questionEntity);
-        QuestionResponse questionResponse = new QuestionResponse().id(questionPosted.getUuid()).status("QUESTION CREATED");
+        QuestionResponse questionResponse = new QuestionResponse();
+        questionResponse.setId(questionPosted.getUuid());
+        questionResponse.setStatus("QUESTION CREATED");
         return new ResponseEntity<QuestionResponse>(questionResponse, HttpStatus.CREATED);
     }
-/*
+
     @RequestMapping(method = RequestMethod.GET, path = "/all", produces = MediaType.APPLICATION_JSON_UTF8_VALUE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionDetailsResponse> getAll(@RequestHeader("authorization") final String authorization) throws AuthenticationFailedException {
+    public ResponseEntity<List<QuestionDetailsResponse>> getAll(@RequestHeader("authorization") final String authorization) throws AuthenticationFailedException {
 
         String accessToken = authorization.split("Bearer")[1];
         // Get Currently logged in user
@@ -59,12 +63,16 @@ public class QuestionController {
 
         final List<QuestionEntity> allQuestions = questionService.getAllQuestions();
 
-        QuestionDetailsResponse questionDetailsResponse = new QuestionDetailsResponse();
-
-        // TODO: Returns all questions
-
+        List<QuestionDetailsResponse> questionResponse = new ArrayList<QuestionDetailsResponse>();
+        for (QuestionEntity entity : allQuestions) {
+        	QuestionDetailsResponse response = new QuestionDetailsResponse();
+        	response.setId(entity.getUuid());
+        	response.setContent(entity.getContent());
+        	questionResponse.add(response);
+        }
+        return new ResponseEntity<List<QuestionDetailsResponse>>(questionResponse, HttpStatus.OK);
     }
-    */
+    
 
 
     @RequestMapping(method = RequestMethod.PUT, path = "/edit/{questionId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
