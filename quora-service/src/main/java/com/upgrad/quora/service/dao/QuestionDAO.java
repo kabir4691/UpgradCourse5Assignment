@@ -4,8 +4,10 @@ import com.upgrad.quora.service.entity.QuestionEntity;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import java.util.List;
 
 @Repository
 public class QuestionDAO {
@@ -25,5 +27,45 @@ public class QuestionDAO {
         } catch (NoResultException nre) {
             return null;
         }
+    }
+
+    /**
+     * Get all questions
+     *
+     * @return List<QuestionEntity
+     */
+    public List<QuestionEntity> getAllQuestions() {
+        try {
+            return entityManager.createNamedQuery("allQuestions", QuestionEntity.class).getResultList();
+        } catch (NoResultException nre) {
+            return null;
+        }
+    }
+
+    /**
+     * Submits user question
+     *
+     * @param questionEntity
+     * @return QuestionEntity
+     */
+    public QuestionEntity submitQuestion(QuestionEntity questionEntity) {
+        EntityTransaction transaction = entityManager.getTransaction();
+        try {
+            transaction.begin();
+            entityManager.merge(questionEntity);
+            transaction.commit();
+        } catch (Exception e) {
+            transaction.rollback();
+        }
+        return questionEntity;
+    }
+
+    /**
+     * Delete question
+     *
+     * @param questionId
+     */
+    public void deleteQuestion(String questionId) {
+        entityManager.remove(questionId);
     }
 }

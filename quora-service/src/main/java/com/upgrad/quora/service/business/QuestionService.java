@@ -6,9 +6,7 @@ import com.upgrad.quora.service.exception.InvalidQuestionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
-import javax.persistence.PersistenceContext;
+import java.util.List;
 
 @Service
 public class QuestionService {
@@ -16,8 +14,6 @@ public class QuestionService {
     @Autowired
     private QuestionDAO questionDAO;
 
-    @PersistenceContext
-    private EntityManager entityManager;
 
     /**
      * Returns QuestionEntity by question ID
@@ -51,14 +47,36 @@ public class QuestionService {
      * @return QuestionEntity
      */
     public QuestionEntity submitQuestion(QuestionEntity questionEntity) {
-        EntityTransaction transaction = entityManager.getTransaction();
-        try {
-            transaction.begin();
-            entityManager.merge(questionEntity);
-            transaction.commit();
-        } catch (Exception e) {
-            transaction.rollback();
+        return questionDAO.submitQuestion(questionEntity);
+    }
+
+    /**
+     * Get all questions
+     *
+     * @return List<QuestionEntity>
+     */
+    public List<QuestionEntity> getAllQuestions() {
+        return questionDAO.getAllQuestions();
+    }
+
+    /**
+     * Return true if user owns the question else false
+     *
+     * @param questionId
+     * @param userId
+     * @return boolean
+     * @throws InvalidQuestionException
+     */
+    public boolean isUserOwnerOfTheQuestrion(String questionId, String userId) throws InvalidQuestionException {
+        return getQuestionByQuestionId(questionId).getUserId().getUuid().equalsIgnoreCase(userId);
+    }
+
+
+    public void deleteQuestion(String questionId) throws InvalidQuestionException {
+        // Checking question is existence
+        if (!isQuestionExist(questionId)) {
+            throw new InvalidQuestionException("QUES-001", "Entered question uuid does not exist");
         }
-        return questionEntity;
+        questionDAO.deleteQuestion(questionId);
     }
 }
