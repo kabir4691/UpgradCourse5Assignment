@@ -4,6 +4,7 @@ import com.upgrad.quora.service.dao.UserDao;
 import com.upgrad.quora.service.entity.UserAuthEntity;
 import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
+import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.SignOutRestrictedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,6 +58,37 @@ public class AuthenticationService {
         userAuthEntity.setLogoutAt(ZonedDateTime.now());
         userDao.updateUser(userEntity);
 
+        return userAuthEntity;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public UserAuthEntity authenticateForUserProfile(final String accessToken) throws AuthorizationFailedException {
+        UserAuthEntity userAuthEntity = userDao.getUserAuth(accessToken);
+        if (userAuthEntity == null) {
+            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+        }
+
+        if(userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())){
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get user details");
+        }
+        return userAuthEntity;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public UserAuthEntity authenticateForUserDelete(final String accessToken) throws AuthorizationFailedException {
+        UserAuthEntity userAuthEntity = userDao.getUserAuth(accessToken);
+        if (userAuthEntity == null) {
+            throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
+        }
+
+        if(userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())){
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out");
+        }
+
+        UserEntity userEntity = userAuthEntity.getUserId();
+        if(userEntity.getRole().equalsIgnoreCase("nonadmin")){
+            throw new AuthorizationFailedException("ATHR-003", "Unauthorized Access, Entered user is not an admin");
+        }
         return userAuthEntity;
     }
 }

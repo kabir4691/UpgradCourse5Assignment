@@ -10,6 +10,10 @@
 
     <packaging>pom</packaging>
 
+    <properties>
+        <postgresql.driver.version>42.2.2</postgresql.driver.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -40,6 +44,11 @@
             <artifactId>spring-context</artifactId>
             <version>5.0.8.RELEASE</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.driver.version}</version>
         </dependency>
     </dependencies>
 
