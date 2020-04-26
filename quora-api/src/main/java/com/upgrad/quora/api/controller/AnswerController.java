@@ -43,7 +43,7 @@ public class AnswerController {
         // Get currently logged in user details
         UserAuthEntity userAuthEntity = authenticationService.getUserAuthEntity(accessToken);
 
-        //TODO: Add validation "User is signed out.Sign in first to delete an answer"
+        //TODO: Add validation "User is signed out.Sign in first to create an answer"
 
         //Build answer entity
         final AnswerEntity answerEntity = new AnswerEntity();
