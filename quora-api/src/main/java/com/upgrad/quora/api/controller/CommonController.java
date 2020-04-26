@@ -6,7 +6,6 @@ import com.upgrad.quora.service.business.AuthenticationService;
 import com.upgrad.quora.service.business.UserProfileService;
 import com.upgrad.quora.service.entity.UserAuthEntity;
 import com.upgrad.quora.service.entity.UserEntity;
-import com.upgrad.quora.service.exception.AuthenticationFailedException;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +25,12 @@ public class CommonController {
     private AuthenticationService authenticationService;
 
     @RequestMapping(method = RequestMethod.GET, path = "/userprofile/{userId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<?> getUser(@PathVariable("userId") final String userUuid, @RequestHeader("accessToken") final String accessToken) throws AuthorizationFailedException, UserNotFoundException {
+    public ResponseEntity<?> getUser(@PathVariable("userId") final String userUuid, @RequestHeader("authorization") final String authorization) throws AuthorizationFailedException, UserNotFoundException {
 
         ErrorResponse errorResponse = new ErrorResponse();
 
         try{
+            String accessToken = authorization.split("Bearer ")[1];
             authenticationService.authenticateForUserProfile(accessToken);
 
             final UserEntity userEntity = userProfileService.getUserByID(userUuid);
@@ -45,7 +45,7 @@ public class CommonController {
             errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
             return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.UNAUTHORIZED);
         } catch (Exception e){
-            errorResponse.code("400").message(e.getMessage());
+            errorResponse.code("400").message("Bad Request").rootCause("Bad Request");
             return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.BAD_REQUEST);
         }
     }

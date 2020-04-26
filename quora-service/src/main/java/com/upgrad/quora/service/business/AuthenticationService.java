@@ -67,8 +67,7 @@ public class AuthenticationService {
             throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
         }
 
-        UserEntity signedInuser = userAuthEntity.getUserId();
-        if(signedInuser == null){
+        if(userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())){
             throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get user details");
         }
         return userAuthEntity;
