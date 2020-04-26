@@ -23,26 +23,7 @@ public class AnswerDAO {
         EntityTransaction transaction = entityManager.getTransaction();
         try {
             transaction.begin();
-            entityManager.persist(answerEntity);
-            transaction.commit();
-        } catch (Exception e) {
-            // Rollback the transaction if there are any failures
-            transaction.rollback();
-        }
-        return answerEntity;
-    }
-
-    /**
-     * Update answer
-     *
-     * @param answerEntity
-     * @return AnswerEntity
-     */
-    public AnswerEntity updateAnswer(AnswerEntity answerEntity) {
-        EntityTransaction transaction = entityManager.getTransaction();
-        try {
-            transaction.begin();
-            entityManager.persist(answerEntity);
+            entityManager.merge(answerEntity);
             transaction.commit();
         } catch (Exception e) {
             // Rollback the transaction if there are any failures
@@ -57,7 +38,7 @@ public class AnswerDAO {
      * @param answerId
      * @return AnswerEntity
      */
-    public AnswerEntity getAnswer(Integer answerId) {
+    public AnswerEntity getAnswer(String answerId) {
         return entityManager.find(AnswerEntity.class, answerId);
     }
 
@@ -66,7 +47,7 @@ public class AnswerDAO {
      *
      * @param answerId
      */
-    public void deleteAnswer(Integer answerId) {
+    public void deleteAnswer(String answerId) {
         entityManager.remove(answerId);
     }
 
