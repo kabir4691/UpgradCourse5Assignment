@@ -46,11 +46,6 @@ public class AnswerService {
         return answer;
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
-    public boolean isAnswerExist(String answerId) throws AnswerNotFoundException {
-        return getAnswer(answerId) != null;
-    }
-
     /**
      * Delete answer by answerId
      *
@@ -59,10 +54,8 @@ public class AnswerService {
      */
     @Transactional(propagation = Propagation.REQUIRED)
     public void deleteAnswer(String answerId) throws AnswerNotFoundException {
-        if (isAnswerExist(answerId)) {
-            // There is an existing answer, deleting it
-            answerDAO.deleteAnswer(getAnswer(answerId));
-        }
+        AnswerEntity answer = getAnswer(answerId);
+        answerDAO.deleteAnswer(answer);
     }
 
     /**
