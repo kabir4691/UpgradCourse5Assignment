@@ -16,6 +16,8 @@
         <postgresql.driver.version>42.2.2</postgresql.driver.version>
         <postgresql.driver.name>org.postgresql.Driver</postgresql.driver.name>
         <sql.path>${basedir}/src/main/resources/sql</sql.path>
+
+
     </properties>
 
     <build>
