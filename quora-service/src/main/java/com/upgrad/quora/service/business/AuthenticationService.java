@@ -63,12 +63,15 @@ public class AuthenticationService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     public UserAuthEntity authenticateForUserProfile(final String accessToken) throws AuthorizationFailedException {
+        //Invoking the DAO layer to get the User Auth Entity details by using Access token information
         UserAuthEntity userAuthEntity = userDao.getUserAuth(accessToken);
         if (userAuthEntity == null) {
+            //AuthorizationFailedException is thrown if the access token provided by the user does not exist in the database
             throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
         }
 
         if(userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())){
+            //AuthorizationFailedException is thrown if the user has signed out
             throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get user details");
         }
         return userAuthEntity;
@@ -76,17 +79,21 @@ public class AuthenticationService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     public UserAuthEntity authenticateForUserDelete(final String accessToken) throws AuthorizationFailedException {
+        //Invoking the DAO layer to get the User Auth Entity details by using Access token information
         UserAuthEntity userAuthEntity = userDao.getUserAuth(accessToken);
         if (userAuthEntity == null) {
+            //AuthorizationFailedException is thrown if the access token provided by the user does not exist in the database
             throw new AuthorizationFailedException("ATHR-001", "User has not signed in");
         }
 
         if(userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())){
+            //AuthorizationFailedException is thrown if the user has signed out
             throw new AuthorizationFailedException("ATHR-002", "User is signed out");
         }
 
         UserEntity userEntity = userAuthEntity.getUserId();
         if(userEntity.getRole().equalsIgnoreCase("nonadmin")){
+            //AuthorizationFailedException is thrown if the role of the user is 'nonadmin'
             throw new AuthorizationFailedException("ATHR-003", "Unauthorized Access, Entered user is not an admin");
         }
         return userAuthEntity;

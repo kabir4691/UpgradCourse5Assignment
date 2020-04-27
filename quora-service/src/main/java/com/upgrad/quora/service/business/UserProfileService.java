@@ -18,6 +18,7 @@ public class UserProfileService {
     public UserEntity getUserByID(final String userUuid) throws UserNotFoundException {
         UserEntity signedInuser = userDao.getUserByID(userUuid);
         if (signedInuser == null) {
+            //UserNotFoundException is thrown if the user with uuid whose profile is to be retrieved does not exist in the database.
             throw new UserNotFoundException("USR-001", "User with entered uuid does not exist");
         }
         return signedInuser;

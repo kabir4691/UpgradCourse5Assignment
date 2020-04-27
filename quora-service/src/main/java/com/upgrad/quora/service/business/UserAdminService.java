@@ -18,6 +18,7 @@ public class UserAdminService {
     public UserEntity getUserByID(final String userUuid) throws UserNotFoundException {
         UserEntity signedInuser = userDao.getUserByID(userUuid);
         if (signedInuser == null) {
+            //UserNotFoundException is thrown if the user with uuid whose profile is to be deleted does not exist in the database
             throw new UserNotFoundException("USR-001", "User with entered uuid to be deleted does not exist");
         }
         return signedInuser;
@@ -25,6 +26,7 @@ public class UserAdminService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     public UserEntity deleteUser(final UserEntity userEntity) throws UserNotFoundException {
+        //This operation deletes the user by invoking the deleteUser method of the DAO layer by taking userEntity object as the information
         UserEntity deletedUser = userDao.deleteUser(userEntity);
         return deletedUser;
     }
