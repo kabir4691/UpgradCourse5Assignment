@@ -86,7 +86,7 @@ public class UserController {
     @RequestMapping(method = RequestMethod.POST, path = "/signout", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<?> signout(@RequestHeader("authorization") final String authorization) {
 
-        String accessToken = authorization.split("Bearer ")[1];
+        String accessToken = authorization;
 
         UserAuthEntity userAuthEntity;
         try {

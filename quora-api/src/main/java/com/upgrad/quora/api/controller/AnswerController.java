@@ -38,7 +38,7 @@ public class AnswerController {
     @RequestMapping(method = RequestMethod.POST, path = "/question/{questionId}/answer/create", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<?> create(@RequestHeader("authorization") final String authorization, @RequestParam(name = "question_id") final String questionId, final AnswerRequest answerRequest) {
 
-        String accessToken = authorization.split("Bearer ")[1];
+        String accessToken = authorization;
 
         UserAuthEntity userAuthEntity;
         try {
@@ -75,7 +75,7 @@ public class AnswerController {
     @RequestMapping(method = RequestMethod.PUT, path = "/answer/edit/{answerId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<?> update(@RequestHeader("authorization") final String authorization, @RequestParam(name = "answerId") final String answerId, final AnswerEditRequest answerEditRequest)  {
 
-        String accessToken = authorization.split("Bearer ")[1];
+        String accessToken = authorization;
 
         UserAuthEntity userAuthEntity;
         try {
@@ -113,7 +113,7 @@ public class AnswerController {
     @RequestMapping(method = RequestMethod.DELETE, path = "/answer/delete/{answerId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<?> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "answerId") final String answerId) {
 
-        String accessToken = authorization.split("Bearer ")[1];
+        String accessToken = authorization;
 
         UserAuthEntity userAuthEntity;
         try {
@@ -148,7 +148,7 @@ public class AnswerController {
     @RequestMapping(method = RequestMethod.GET, path = "/answer/all/{questionId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<?> getAllAnswers(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) {
 
-        String accessToken = authorization.split("Bearer ")[1];
+        String accessToken = authorization;
 
         try {
             authenticationService.authorizeUserLogedin(accessToken);

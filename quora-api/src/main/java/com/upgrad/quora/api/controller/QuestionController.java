@@ -32,7 +32,7 @@ public class QuestionController {
     @RequestMapping(method = RequestMethod.POST, path = "/create", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<?> create(@RequestHeader("authorization") final String authorization, final QuestionRequest questionRequest) {
 
-        String accessToken = authorization.split("Bearer ")[1];
+        String accessToken = authorization;
 
         UserAuthEntity userAuthEntity;
         try {
@@ -58,7 +58,7 @@ public class QuestionController {
     @RequestMapping(method = RequestMethod.GET, path = "/all", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<?> getAll(@RequestHeader("authorization") final String authorization) {
 
-        String accessToken = authorization.split("Bearer ")[1];
+        String accessToken = authorization;
 
         try {
             authenticationService.authorizeUserLogedin(accessToken);
@@ -82,7 +82,7 @@ public class QuestionController {
 
     @RequestMapping(method = RequestMethod.PUT, path = "/edit/{questionId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<?> edit(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId, final QuestionEditRequest questionEditRequest) {
-        String accessToken = authorization.split("Bearer ")[1];
+        String accessToken = authorization;
 
         UserAuthEntity userAuthEntity;
         try {
@@ -128,7 +128,7 @@ public class QuestionController {
     @RequestMapping(method = RequestMethod.DELETE, path = "/delete", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<?> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) {
 
-        String accessToken = authorization.split("Bearer ")[1];
+        String accessToken = authorization;
 
         UserAuthEntity userAuthEntity;
         try {
@@ -165,7 +165,7 @@ public class QuestionController {
     public ResponseEntity<?> getAllByUser(@RequestHeader("authorization") final String authorization, @RequestParam(name = "userId") final String userId) {
 
 
-        String accessToken = authorization.split("Bearer ")[1];
+        String accessToken = authorization;
 
         try {
             authenticationService.authorizeUserLogedin(accessToken);
