@@ -32,7 +32,7 @@ public class QuestionController {
     @RequestMapping(method = RequestMethod.POST, path = "/create", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<QuestionResponse> create(@RequestHeader("authorization") final String authorization, final QuestionRequest questionRequest) throws AuthorizationFailedException {
 
-        String accessToken = authorization.split("Bearer")[1];
+        String accessToken = authorization.split("Bearer ")[1];
 
         // Authorize user login
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);

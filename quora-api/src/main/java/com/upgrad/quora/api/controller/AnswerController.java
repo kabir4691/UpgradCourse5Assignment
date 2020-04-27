@@ -41,7 +41,7 @@ public class AnswerController {
         // Validate existence of question
         final QuestionEntity questionEntity = questionService.getQuestionByQuestionId(questionId);
 
-        String accessToken = authorization.split("Bearer")[1];
+        String accessToken = authorization.split("Bearer ")[1];
 
         // Authorize user login
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
