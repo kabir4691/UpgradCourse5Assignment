@@ -1,10 +1,10 @@
 package com.upgrad.quora.service.dao;
 
 import com.upgrad.quora.service.entity.QuestionEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import java.util.List;
@@ -13,6 +13,7 @@ import java.util.List;
 public class QuestionDAO {
 
     @PersistenceContext
+    @Autowired
     private EntityManager entityManager;
 
     /**
@@ -23,7 +24,7 @@ public class QuestionDAO {
      */
     public QuestionEntity getQuestionByQuestionId(String questionId) {
         try {
-            return entityManager.createNamedQuery("questionByQuestionId", QuestionEntity.class).setParameter("question_id", questionId).getSingleResult();
+            return entityManager.createNamedQuery("questionByQuestionId", QuestionEntity.class).setParameter("questionId", questionId).getSingleResult();
         } catch (NoResultException nre) {
             return null;
         }
@@ -49,14 +50,7 @@ public class QuestionDAO {
      * @return QuestionEntity
      */
     public QuestionEntity submitQuestion(QuestionEntity questionEntity) {
-        EntityTransaction transaction = entityManager.getTransaction();
-        try {
-            transaction.begin();
-            entityManager.merge(questionEntity);
-            transaction.commit();
-        } catch (Exception e) {
-            transaction.rollback();
-        }
+        entityManager.merge(questionEntity);
         return questionEntity;
     }
 

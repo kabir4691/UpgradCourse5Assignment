@@ -8,7 +8,6 @@ import com.upgrad.quora.service.entity.AnswerEntity;
 import com.upgrad.quora.service.entity.QuestionEntity;
 import com.upgrad.quora.service.entity.UserAuthEntity;
 import com.upgrad.quora.service.exception.AnswerNotFoundException;
-import com.upgrad.quora.service.exception.AuthenticationFailedException;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,16 +33,19 @@ public class AnswerController {
 
 
     @RequestMapping(method = RequestMethod.POST, path = "/question/{questionId}/answer/create", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<AnswerResponse> create(@RequestHeader("authorization") final String authorization, @RequestParam(name = "question_id") final String questionId, final AnswerRequest answerRequest) throws AuthenticationFailedException, InvalidQuestionException {
+    public ResponseEntity<AnswerResponse> create(@RequestHeader("authorization") final String authorization, @RequestParam(name = "question_id") final String questionId, final AnswerRequest answerRequest) throws InvalidQuestionException, AuthorizationFailedException {
 
+        // Validate existence of question
         final QuestionEntity questionEntity = questionService.getQuestionByQuestionId(questionId);
 
         String accessToken = authorization.split("Bearer ")[1];
 
-        // Get currently logged in user details
-        UserAuthEntity userAuthEntity = authenticationService.getUserAuthEntity(accessToken);
+        // Authorize user login
+        UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
 
-        //TODO: Add validation "User is signed out.Sign in first to create an answer"
+        if (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())) {
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to post an answer");
+        }
 
         //Build answer entity
         final AnswerEntity answerEntity = new AnswerEntity();
@@ -59,21 +61,24 @@ public class AnswerController {
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "/answer/edit/{answerId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<AnswerEditResponse> update(@RequestHeader("authorization") final String authorization, @RequestParam(name = "answerId") final String answerId, final AnswerEditRequest answerEditRequest) throws AuthenticationFailedException, AuthorizationFailedException, AnswerNotFoundException {
+    public ResponseEntity<AnswerEditResponse> update(@RequestHeader("authorization") final String authorization, @RequestParam(name = "answerId") final String answerId, final AnswerEditRequest answerEditRequest) throws AuthorizationFailedException, AnswerNotFoundException {
 
         String accessToken = authorization.split("Bearer ")[1];
 
-        // Get currently logged in user details
-        UserAuthEntity userAuthEntity = authenticationService.getUserAuthEntity(accessToken);
+        // Authorize user login
+        UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
 
-        //TODO: Add validation "User is signed out.Sign in first to delete an answer"
+        // Authorize user session
+        if (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())) {
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to edit the answer");
+        }
 
         // Validate existence of an answer
         answerService.isAnswerExist(answerId);
 
         // Validate the ownership of the answer
         if (!answerService.isUserOwnerOfTheAnswer(answerId, userAuthEntity.getUserId().getUuid())) {
-            throw new AuthenticationFailedException("ATHR-003", "Only the answer owner can edit the answer");
+            throw new AuthorizationFailedException("ATHR-003", "Only the answer owner can edit the answer");
         }
 
         // Construct updated answer
@@ -88,22 +93,25 @@ public class AnswerController {
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/answer/delete/{answerId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<AnswerDeleteResponse> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "answerId") final String answerId) throws AnswerNotFoundException, AuthenticationFailedException {
+    public ResponseEntity<AnswerDeleteResponse> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "answerId") final String answerId) throws AnswerNotFoundException, AuthorizationFailedException {
 
         String accessToken = authorization.split("Bearer ")[1];
 
-        // Get currently logged in user details
-        UserAuthEntity userAuthEntity = authenticationService.getUserAuthEntity(accessToken);
+        // Authorize user login
+        UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
 
-        //TODO: Add validation "User is signed out.Sign in first to delete an answer"
+        // Authorize user session
+        if (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())) {
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to delete the answer");
+        }
 
         // Validate existence of an answer
         answerService.isAnswerExist(answerId);
 
         // Validate the ownership of the answer
-        if (!answerService.isUserOwnerOfTheAnswer(answerId, userAuthEntity.getUserId().getUuid())) {
+        /*if (!answerService.isUserOwnerOfTheAnswer(answerId, userAuthEntity.getUserId().getUuid())) {
             throw new AuthenticationFailedException("ATHR-003", "Only the answer owner or admin can delete the answer");
-        }
+        }*/
 
         // Delete the answer
         answerService.deleteAnswer(answerId);
@@ -112,14 +120,17 @@ public class AnswerController {
     }
 
    /* @RequestMapping(method = RequestMethod.GET, path = "/answer/all/{answerId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<AnswerDetailsResponse> getAllAnswers(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) throws AuthenticationFailedException, InvalidQuestionException {
+    public ResponseEntity<AnswerDetailsResponse> getAllAnswers(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) throws InvalidQuestionException, AuthorizationFailedException {
 
         String accessToken = authorization.split("Bearer ")[1];
 
-        // Get currently logged in user details
-        UserAuthEntity userAuthEntity = authenticationService.getUserAuthEntity(accessToken);
+        // Authorize user login
+        UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
 
-        //TODO: Add validation "User is signed out.Sign in first to get all answers"
+         // Authorize user session
+        if (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())) {
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get all the answers");
+        }
 
         // Verify existence of question in the database
         if (!questionService.isQuestionExist(questionId)) {
@@ -127,6 +138,13 @@ public class AnswerController {
         }
 
         // TODO: Load question and answer content
+
+        final List<AnswerEntity> allAnswers = answerService.getAllAnswers(questionId);
+        JSONArray arr = new JSONArray();
+        for (AnswerEntity ans : allAnswers) {
+
+        }
+        AnswerDetailsResponse
 
         return null;
        )

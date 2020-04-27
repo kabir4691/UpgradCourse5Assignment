@@ -2,9 +2,15 @@ package com.upgrad.quora.service.business;
 
 import com.upgrad.quora.service.dao.AnswerDAO;
 import com.upgrad.quora.service.entity.AnswerEntity;
+import com.upgrad.quora.service.entity.QuestionEntity;
 import com.upgrad.quora.service.exception.AnswerNotFoundException;
+import com.upgrad.quora.service.exception.InvalidQuestionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class AnswerService {
@@ -12,11 +18,15 @@ public class AnswerService {
     @Autowired
     private AnswerDAO answerDAO;
 
+    @Autowired
+    private QuestionService questionService;
+
     /**
      * Submits user posted answer
      *
      * @param answerEntity
      */
+    @Transactional(propagation = Propagation.REQUIRED)
     public AnswerEntity submitAnswer(AnswerEntity answerEntity) {
         return answerDAO.submitAnswer(answerEntity);
     }
@@ -27,6 +37,7 @@ public class AnswerService {
      * @param answerId
      * @return
      */
+    @Transactional(propagation = Propagation.REQUIRED)
     public AnswerEntity getAnswer(String answerId) throws AnswerNotFoundException {
         AnswerEntity answer = answerDAO.getAnswer(answerId);
         if (answer == null) {
@@ -35,6 +46,7 @@ public class AnswerService {
         return answer;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public boolean isAnswerExist(String answerId) throws AnswerNotFoundException {
         return getAnswer(answerId) != null;
     }
@@ -45,6 +57,7 @@ public class AnswerService {
      * @param answerId
      * @throws AnswerNotFoundException
      */
+    @Transactional(propagation = Propagation.REQUIRED)
     public void deleteAnswer(String answerId) throws AnswerNotFoundException {
         if (isAnswerExist(answerId)) {
             // There is an existing answer, deleting it
@@ -60,7 +73,14 @@ public class AnswerService {
      * @return boolean
      * @throws AnswerNotFoundException
      */
+    @Transactional(propagation = Propagation.REQUIRED)
     public boolean isUserOwnerOfTheAnswer(String answerId, String userId) throws AnswerNotFoundException {
         return getAnswer(answerId).getUserId().getUuid().equals(userId);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public List<AnswerEntity> getAllAnswers(String questionId) throws InvalidQuestionException {
+        QuestionEntity questionEntity = questionService.getQuestionByQuestionId(questionId);
+        return answerDAO.getAllAnswers(questionEntity.getId());
     }
 }

@@ -6,6 +6,7 @@ import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.SignOutRestrictedException;
+import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -99,11 +100,13 @@ public class AuthenticationService {
         return userAuthEntity;
     }
 
-    public UserAuthEntity getUserAuthEntity(final String accessToken) throws AuthenticationFailedException {
+    @Transactional(propagation = Propagation.REQUIRED)
+    public UserAuthEntity authorizeUserLogedin(final String accessToken) throws AuthorizationFailedException {
         UserAuthEntity userAuthEntity = userDao.getUserAuth(accessToken);
         if (userAuthEntity == null) {
-            throw new AuthenticationFailedException("SGR-001", "User is not Signed in");
+            throw new AuthorizationFailedException("SGR-001", "User is not Signed in");
         }
         return userAuthEntity;
     }
+
 }
