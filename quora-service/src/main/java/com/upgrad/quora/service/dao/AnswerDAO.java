@@ -45,8 +45,6 @@ public class AnswerDAO {
 
     public List<AnswerEntity> getAllAnswers(Integer questionId) {
         try {
-           // QuestionEntity questionEntity = questionDAO.getQuestionByQuestionId(questionId);
-            //questionEntity.getContent();
             return entityManager.createNamedQuery("allAnswersByQuestionId", AnswerEntity.class).setParameter("questionId", questionId).getResultList();
         } catch (NoResultException nre) {
             return null;
@@ -57,10 +55,10 @@ public class AnswerDAO {
     /**
      * Delete answer by answer Id
      *
-     * @param answerId
+     * @param answerEntity
      */
-    public void deleteAnswer(String answerId) {
-        entityManager.remove(answerId);
+    public void deleteAnswer(AnswerEntity answerEntity) {
+        entityManager.remove(answerEntity);
     }
 
 }
