@@ -30,11 +30,18 @@ public class QuestionController {
     private QuestionService questionService;
 
     @RequestMapping(method = RequestMethod.POST, path = "/create", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionResponse> create(@RequestHeader("authorization") final String authorization, final QuestionRequest questionRequest) throws AuthorizationFailedException {
+    public ResponseEntity<QuestionResponse> create(@RequestHeader("authorization") final String authorization, final QuestionRequest questionRequest) {
 
         String accessToken = authorization.split("Bearer ")[1];
 
-        UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
+        UserAuthEntity userAuthEntity;
+        try {
+            userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
+        } catch (AuthorizationFailedException e) {
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.UNAUTHORIZED);
+        }
 
         // Build question entity
         QuestionEntity questionEntity = new QuestionEntity();
@@ -49,11 +56,17 @@ public class QuestionController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/all", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<List<QuestionDetailsResponse>> getAll(@RequestHeader("authorization") final String authorization) throws AuthenticationFailedException, AuthorizationFailedException {
+    public ResponseEntity<List<QuestionDetailsResponse>> getAll(@RequestHeader("authorization") final String authorization) {
 
         String accessToken = authorization.split("Bearer ")[1];
 
-        authenticationService.authorizeUserLogedin(accessToken);
+        try {
+            authenticationService.authorizeUserLogedin(accessToken);
+        } catch (AuthorizationFailedException e) {
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.UNAUTHORIZED);
+        }
 
         final List<QuestionEntity> allQuestions = questionService.getAllQuestions();
 
@@ -68,22 +81,41 @@ public class QuestionController {
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "/edit/{questionId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionEditResponse> edit(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId, final QuestionEditRequest questionEditRequest) throws AuthenticationFailedException, InvalidQuestionException, AuthorizationFailedException {
+    public ResponseEntity<QuestionEditResponse> edit(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId, final QuestionEditRequest questionEditRequest) {
         String accessToken = authorization.split("Bearer ")[1];
 
-        UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
+        UserAuthEntity userAuthEntity;
+        try {
+            userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
+        } catch (AuthorizationFailedException e) {
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.UNAUTHORIZED);
+        }
 
         // Checking the ownership of the question
-        if (!questionService.isUserOwnerOfTheQuestrion(questionId, userAuthEntity.getUserId().getUuid())) {
-            throw new AuthenticationFailedException("ATHR-003", "Only the question owner can edit the question");
+        try {
+            if (!questionService.isUserOwnerOfTheQuestrion(questionId, userAuthEntity.getUserId().getUuid())) {
+                Exception e = new AuthenticationFailedException("ATHR-003", "Only the question owner can edit the question");
+                ErrorResponse errorResponse = new ErrorResponse();
+                errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
+                return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.FORBIDDEN);
+            }
+        } catch (InvalidQuestionException e) {
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.BAD_REQUEST);
         }
 
-        // Checking question is existence
-        if (!questionService.isQuestionExist(questionId)) {
-            throw new InvalidQuestionException("QUES-001", "Entered question uuid does not exist");
+        QuestionEntity updateQuestionEntity;
+        try {
+            updateQuestionEntity = questionService.getQuestionByQuestionId(questionId);
+        } catch (InvalidQuestionException e) {
+            Exception e2 = new InvalidQuestionException("QUES-001", "Entered question uuid does not exist");
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.code(e2.getCode()).message(e2.getErrorMessage()).rootCause(e2.getErrorMessage());
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.BAD_REQUEST);
         }
-
-        QuestionEntity updateQuestionEntity = questionService.getQuestionByQuestionId(questionId);
         updateQuestionEntity.setDate(ZonedDateTime.now());
         updateQuestionEntity.setContent(questionEditRequest.getContent());
 
@@ -94,30 +126,54 @@ public class QuestionController {
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/delete", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionDeleteResponse> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) throws AuthenticationFailedException, InvalidQuestionException, AuthorizationFailedException {
+    public ResponseEntity<QuestionDeleteResponse> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) {
 
         String accessToken = authorization.split("Bearer ")[1];
 
-        UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
-
-        // Checking the ownership of the question
-        if (!questionService.isUserOwnerOfTheQuestrion(questionId, userAuthEntity.getUserId().getUuid())) {
-            throw new AuthenticationFailedException("ATHR-003", "Only the question owner can delete the question");
+        UserAuthEntity userAuthEntity;
+        try {
+            userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
+        } catch (AuthorizationFailedException e) {
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.UNAUTHORIZED);
         }
 
-        // Delete question
-        questionService.deleteQuestion(questionId);
+        // Checking the ownership of the question
+        try {
+            if (!questionService.isUserOwnerOfTheQuestrion(questionId, userAuthEntity.getUserId().getUuid())) {
+                Exception e = new AuthenticationFailedException("ATHR-003", "Only the question owner can delete the question");
+                ErrorResponse errorResponse = new ErrorResponse();
+                errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
+                return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.FORBIDDEN);
+            }
+
+            // Delete question
+            questionService.deleteQuestion(questionId);
+        } catch (InvalidQuestionException e) {
+            Exception e2 = new InvalidQuestionException("QUES-001", "Entered question uuid does not exist");
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.code(e2.getCode()).message(e2.getErrorMessage()).rootCause(e2.getErrorMessage());
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+
         QuestionDeleteResponse questionDeleteResponse = new QuestionDeleteResponse().id(questionId).status("QUESTION DELETED");
         return new ResponseEntity<QuestionDeleteResponse>(questionDeleteResponse, HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/all/{userId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<List<QuestionDetailsResponse>> getAllByUser(@RequestHeader("authorization") final String authorization, @RequestParam(name = "userId") final String userId) throws AuthorizationFailedException {
+    public ResponseEntity<List<QuestionDetailsResponse>> getAllByUser(@RequestHeader("authorization") final String authorization, @RequestParam(name = "userId") final String userId) {
 
 
         String accessToken = authorization.split("Bearer ")[1];
-        
-        authenticationService.authorizeUserLogedin(accessToken);
+
+        try {
+            authenticationService.authorizeUserLogedin(accessToken);
+        } catch (AuthorizationFailedException e) {
+            ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.UNAUTHORIZED);
+        }
 
         final List<QuestionEntity> userQuestions = questionService.getQuestionsByUser(userId);
 
