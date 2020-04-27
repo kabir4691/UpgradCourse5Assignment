@@ -1,9 +1,6 @@
 package com.upgrad.quora.api.controller;
 
-import com.upgrad.quora.api.model.SigninResponse;
-import com.upgrad.quora.api.model.SignoutResponse;
-import com.upgrad.quora.api.model.SignupUserRequest;
-import com.upgrad.quora.api.model.SignupUserResponse;
+import com.upgrad.quora.api.model.*;
 import com.upgrad.quora.service.business.AuthenticationService;
 import com.upgrad.quora.service.business.UserBusinessService;
 import com.upgrad.quora.service.entity.UserAuthEntity;
@@ -34,7 +31,7 @@ public class UserController {
     private AuthenticationService authenticationService;
 
     @RequestMapping(method = RequestMethod.POST, path = "/signup", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<SignupUserResponse> signup(final SignupUserRequest signupUserRequest) {
+    public ResponseEntity<?> signup(final SignupUserRequest signupUserRequest) {
         final UserEntity userEntity = new UserEntity();
         userEntity.setUuid(UUID.randomUUID().toString());
         userEntity.setFirstName(signupUserRequest.getFirstName());
@@ -62,7 +59,7 @@ public class UserController {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/signin", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<SigninResponse> signin(@RequestHeader("authorization") final String authorization) {
+    public ResponseEntity<?> signin(@RequestHeader("authorization") final String authorization) {
 
         String credentials = authorization.split("Basic ")[1];
         String[] credentialsArray = credentials.split(":");
@@ -87,7 +84,7 @@ public class UserController {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/signout", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<SignoutResponse> signout(@RequestHeader("authorization") final String authorization) {
+    public ResponseEntity<?> signout(@RequestHeader("authorization") final String authorization) {
 
         String accessToken = authorization.split("Bearer ")[1];
 

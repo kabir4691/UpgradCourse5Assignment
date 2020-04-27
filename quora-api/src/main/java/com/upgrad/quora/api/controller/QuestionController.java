@@ -30,7 +30,7 @@ public class QuestionController {
     private QuestionService questionService;
 
     @RequestMapping(method = RequestMethod.POST, path = "/create", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionResponse> create(@RequestHeader("authorization") final String authorization, final QuestionRequest questionRequest) {
+    public ResponseEntity<?> create(@RequestHeader("authorization") final String authorization, final QuestionRequest questionRequest) {
 
         String accessToken = authorization.split("Bearer ")[1];
 
@@ -56,7 +56,7 @@ public class QuestionController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/all", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<List<QuestionDetailsResponse>> getAll(@RequestHeader("authorization") final String authorization) {
+    public ResponseEntity<?> getAll(@RequestHeader("authorization") final String authorization) {
 
         String accessToken = authorization.split("Bearer ")[1];
 
@@ -81,7 +81,7 @@ public class QuestionController {
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "/edit/{questionId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionEditResponse> edit(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId, final QuestionEditRequest questionEditRequest) {
+    public ResponseEntity<?> edit(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId, final QuestionEditRequest questionEditRequest) {
         String accessToken = authorization.split("Bearer ")[1];
 
         UserAuthEntity userAuthEntity;
@@ -96,7 +96,7 @@ public class QuestionController {
         // Checking the ownership of the question
         try {
             if (!questionService.isUserOwnerOfTheQuestrion(questionId, userAuthEntity.getUserId().getUuid())) {
-                Exception e = new AuthenticationFailedException("ATHR-003", "Only the question owner can edit the question");
+                AuthenticationFailedException e = new AuthenticationFailedException("ATHR-003", "Only the question owner can edit the question");
                 ErrorResponse errorResponse = new ErrorResponse();
                 errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
                 return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.FORBIDDEN);
@@ -111,7 +111,7 @@ public class QuestionController {
         try {
             updateQuestionEntity = questionService.getQuestionByQuestionId(questionId);
         } catch (InvalidQuestionException e) {
-            Exception e2 = new InvalidQuestionException("QUES-001", "Entered question uuid does not exist");
+            InvalidQuestionException e2 = new InvalidQuestionException("QUES-001", "Entered question uuid does not exist");
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e2.getCode()).message(e2.getErrorMessage()).rootCause(e2.getErrorMessage());
             return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.BAD_REQUEST);
@@ -126,7 +126,7 @@ public class QuestionController {
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/delete", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionDeleteResponse> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) {
+    public ResponseEntity<?> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) {
 
         String accessToken = authorization.split("Bearer ")[1];
 
@@ -142,7 +142,7 @@ public class QuestionController {
         // Checking the ownership of the question
         try {
             if (!questionService.isUserOwnerOfTheQuestrion(questionId, userAuthEntity.getUserId().getUuid())) {
-                Exception e = new AuthenticationFailedException("ATHR-003", "Only the question owner can delete the question");
+                AuthenticationFailedException e = new AuthenticationFailedException("ATHR-003", "Only the question owner can delete the question");
                 ErrorResponse errorResponse = new ErrorResponse();
                 errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
                 return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.FORBIDDEN);
@@ -151,7 +151,7 @@ public class QuestionController {
             // Delete question
             questionService.deleteQuestion(questionId);
         } catch (InvalidQuestionException e) {
-            Exception e2 = new InvalidQuestionException("QUES-001", "Entered question uuid does not exist");
+            InvalidQuestionException e2 = new InvalidQuestionException("QUES-001", "Entered question uuid does not exist");
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e2.getCode()).message(e2.getErrorMessage()).rootCause(e2.getErrorMessage());
             return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.BAD_REQUEST);
@@ -162,7 +162,7 @@ public class QuestionController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/all/{userId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<List<QuestionDetailsResponse>> getAllByUser(@RequestHeader("authorization") final String authorization, @RequestParam(name = "userId") final String userId) {
+    public ResponseEntity<?> getAllByUser(@RequestHeader("authorization") final String authorization, @RequestParam(name = "userId") final String userId) {
 
 
         String accessToken = authorization.split("Bearer ")[1];

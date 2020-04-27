@@ -36,7 +36,7 @@ public class AnswerController {
 
 
     @RequestMapping(method = RequestMethod.POST, path = "/question/{questionId}/answer/create", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<AnswerResponse> create(@RequestHeader("authorization") final String authorization, @RequestParam(name = "question_id") final String questionId, final AnswerRequest answerRequest) {
+    public ResponseEntity<?> create(@RequestHeader("authorization") final String authorization, @RequestParam(name = "question_id") final String questionId, final AnswerRequest answerRequest) {
 
         String accessToken = authorization.split("Bearer ")[1];
 
@@ -73,7 +73,7 @@ public class AnswerController {
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "/answer/edit/{answerId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<AnswerEditResponse> update(@RequestHeader("authorization") final String authorization, @RequestParam(name = "answerId") final String answerId, final AnswerEditRequest answerEditRequest)  {
+    public ResponseEntity<?> update(@RequestHeader("authorization") final String authorization, @RequestParam(name = "answerId") final String answerId, final AnswerEditRequest answerEditRequest)  {
 
         String accessToken = authorization.split("Bearer ")[1];
 
@@ -89,7 +89,7 @@ public class AnswerController {
         // Validate the ownership of the answer
         try {
             if (!answerService.isUserOwnerOfTheAnswer(answerId, userAuthEntity.getUserId().getUuid())) {
-                Exception e = new AuthorizationFailedException("ATHR-003", "Only the answer owner can edit the answer");
+                AuthorizationFailedException e = new AuthorizationFailedException("ATHR-003", "Only the answer owner can edit the answer");
                 ErrorResponse errorResponse = new ErrorResponse();
                 errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
                 return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.FORBIDDEN);
@@ -111,7 +111,7 @@ public class AnswerController {
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/answer/delete/{answerId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<AnswerDeleteResponse> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "answerId") final String answerId) {
+    public ResponseEntity<?> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "answerId") final String answerId) {
 
         String accessToken = authorization.split("Bearer ")[1];
 
@@ -127,7 +127,7 @@ public class AnswerController {
         // Validate the ownership of the answer
         try {
             if (!answerService.isUserOwnerOfTheAnswer(answerId, userAuthEntity.getUserId().getUuid())) {
-                Exception e = new AuthenticationFailedException("ATHR-003", "Only the answer owner or admin can delete the answer");
+                AuthenticationFailedException e = new AuthenticationFailedException("ATHR-003", "Only the answer owner or admin can delete the answer");
                 ErrorResponse errorResponse = new ErrorResponse();
                 errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
                 return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.FORBIDDEN);
@@ -146,7 +146,7 @@ public class AnswerController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/answer/all/{questionId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<List<AnswerDetailsResponse>> getAllAnswers(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) {
+    public ResponseEntity<?> getAllAnswers(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) {
 
         String accessToken = authorization.split("Bearer ")[1];
 
@@ -164,7 +164,7 @@ public class AnswerController {
             questionEntity = questionService.getQuestionByQuestionId(questionId);
             allAnswers = answerService.getAllAnswers(questionId);
         } catch (InvalidQuestionException e) {
-            Exception e2 = new InvalidQuestionException("QUES-001", "The question with entered uuid whose details are to be seen does not exist");
+            InvalidQuestionException e2 = new InvalidQuestionException("QUES-001", "The question with entered uuid whose details are to be seen does not exist");
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e2.getCode()).message(e2.getErrorMessage()).rootCause(e2.getErrorMessage());
             return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.BAD_REQUEST);
