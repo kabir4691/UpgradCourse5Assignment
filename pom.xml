@@ -8,7 +8,12 @@
     <artifactId>quora</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+
     <packaging>pom</packaging>
+    <properties>
+        <postgresql.driver.version>42.2.2</postgresql.driver.version>
+        <postgresql.driver.name>org.postgresql.Driver</postgresql.driver.name>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -40,6 +45,11 @@
             <artifactId>spring-context</artifactId>
             <version>5.0.8.RELEASE</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.driver.version}</version>
         </dependency>
     </dependencies>
 
