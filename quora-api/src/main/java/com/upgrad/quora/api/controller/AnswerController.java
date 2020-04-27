@@ -8,6 +8,7 @@ import com.upgrad.quora.service.entity.AnswerEntity;
 import com.upgrad.quora.service.entity.QuestionEntity;
 import com.upgrad.quora.service.entity.UserAuthEntity;
 import com.upgrad.quora.service.exception.AnswerNotFoundException;
+import com.upgrad.quora.service.exception.AuthenticationFailedException;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -38,7 +41,7 @@ public class AnswerController {
         // Validate existence of question
         final QuestionEntity questionEntity = questionService.getQuestionByQuestionId(questionId);
 
-        String accessToken = authorization.split("Bearer ")[1];
+        String accessToken = authorization.split("Bearer")[1];
 
         // Authorize user login
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
@@ -63,7 +66,7 @@ public class AnswerController {
     @RequestMapping(method = RequestMethod.PUT, path = "/answer/edit/{answerId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<AnswerEditResponse> update(@RequestHeader("authorization") final String authorization, @RequestParam(name = "answerId") final String answerId, final AnswerEditRequest answerEditRequest) throws AuthorizationFailedException, AnswerNotFoundException {
 
-        String accessToken = authorization.split("Bearer ")[1];
+        String accessToken = authorization.split("Bearer")[1];
 
         // Authorize user login
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
@@ -92,10 +95,10 @@ public class AnswerController {
 
     }
 
-    @RequestMapping(method = RequestMethod.DELETE, path = "/answer/delete/{answerId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<AnswerDeleteResponse> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "answerId") final String answerId) throws AnswerNotFoundException, AuthorizationFailedException {
+    @RequestMapping(method = RequestMethod.DELETE, path = "/answer/delete/{answerId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<AnswerDeleteResponse> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "answerId") final String answerId) throws AnswerNotFoundException, AuthorizationFailedException, AuthenticationFailedException {
 
-        String accessToken = authorization.split("Bearer ")[1];
+        String accessToken = authorization.split("Bearer")[1];
 
         // Authorize user login
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
@@ -109,9 +112,9 @@ public class AnswerController {
         answerService.isAnswerExist(answerId);
 
         // Validate the ownership of the answer
-        /*if (!answerService.isUserOwnerOfTheAnswer(answerId, userAuthEntity.getUserId().getUuid())) {
+        if (!answerService.isUserOwnerOfTheAnswer(answerId, userAuthEntity.getUserId().getUuid())) {
             throw new AuthenticationFailedException("ATHR-003", "Only the answer owner or admin can delete the answer");
-        }*/
+        }
 
         // Delete the answer
         answerService.deleteAnswer(answerId);
@@ -119,15 +122,15 @@ public class AnswerController {
         return new ResponseEntity<AnswerDeleteResponse>(answerDeleteResponse, HttpStatus.OK);
     }
 
-   /* @RequestMapping(method = RequestMethod.GET, path = "/answer/all/{answerId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<AnswerDetailsResponse> getAllAnswers(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) throws InvalidQuestionException, AuthorizationFailedException {
+    @RequestMapping(method = RequestMethod.GET, path = "/answer/all/{questionId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<List<AnswerDetailsResponse>> getAllAnswers(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) throws InvalidQuestionException, AuthorizationFailedException {
 
-        String accessToken = authorization.split("Bearer ")[1];
+        String accessToken = authorization.split("Bearer")[1];
 
         // Authorize user login
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
 
-         // Authorize user session
+        // Authorize user session
         if (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())) {
             throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get all the answers");
         }
@@ -137,16 +140,17 @@ public class AnswerController {
             throw new InvalidQuestionException("QUES-001", "The question with entered uuid whose details are to be seen does not exist");
         }
 
-        // TODO: Load question and answer content
+        final QuestionEntity questionEntity = questionService.getQuestionByQuestionId(questionId);
+        List<AnswerEntity> allAnswers = answerService.getAllAnswers(questionId);
 
-        final List<AnswerEntity> allAnswers = answerService.getAllAnswers(questionId);
-        JSONArray arr = new JSONArray();
-        for (AnswerEntity ans : allAnswers) {
-
+        List<AnswerDetailsResponse> answerResponse = new ArrayList<AnswerDetailsResponse>();
+        for (AnswerEntity answer : allAnswers) {
+            AnswerDetailsResponse answerDetailsResponse = new AnswerDetailsResponse();
+            answerDetailsResponse.setAnswerContent(answer.getAns());
+            answerDetailsResponse.setQuestionContent(questionEntity.getContent());
+            answerDetailsResponse.setId(answer.getUuid());
+            answerResponse.add(answerDetailsResponse);
         }
-        AnswerDetailsResponse
-
-        return null;
-       )
-    }*/
+        return new ResponseEntity<List<AnswerDetailsResponse>>(answerResponse, HttpStatus.OK);
+    }
 }

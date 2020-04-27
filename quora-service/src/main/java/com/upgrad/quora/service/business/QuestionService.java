@@ -79,12 +79,30 @@ public class QuestionService {
     }
 
 
+    /**
+     * Delete question
+     *
+     * @param questionId
+     * @throws InvalidQuestionException
+     */
     @Transactional(propagation = Propagation.REQUIRED)
     public void deleteQuestion(String questionId) throws InvalidQuestionException {
         // Checking question is existence
         if (!isQuestionExist(questionId)) {
             throw new InvalidQuestionException("QUES-001", "Entered question uuid does not exist");
         }
-        questionDAO.deleteQuestion(questionId);
+        QuestionEntity questionEntity = getQuestionByQuestionId(questionId);
+        questionDAO.deleteQuestion(questionEntity);
+    }
+
+    /**
+     * Get user question
+     *
+     * @param userId
+     * @return
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
+    public List<QuestionEntity> getQuestionsByUser(String userId) {
+        return questionDAO.getQuestionsByUser(userId);
     }
 }

@@ -1,6 +1,7 @@
 package com.upgrad.quora.service.dao;
 
 import com.upgrad.quora.service.entity.QuestionEntity;
+import com.upgrad.quora.service.entity.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -15,6 +16,9 @@ public class QuestionDAO {
     @PersistenceContext
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private UserDao userDao;
 
     /**
      * Returns Question details by questionId
@@ -44,6 +48,22 @@ public class QuestionDAO {
     }
 
     /**
+     * Get user questions
+     *
+     * @param uuid
+     * @return List<QuestionEntity>
+     */
+    public List<QuestionEntity> getQuestionsByUser(String uuid) {
+
+        final UserEntity userEntity = userDao.getUserByUUID(uuid);
+        try {
+            return entityManager.createNamedQuery("questionByUserId", QuestionEntity.class).setParameter("userId", userEntity.getId()).getResultList();
+        } catch (NoResultException nre) {
+            return null;
+        }
+    }
+
+    /**
      * Submits user question
      *
      * @param questionEntity
@@ -57,9 +77,9 @@ public class QuestionDAO {
     /**
      * Delete question
      *
-     * @param questionId
+     * @param questionEntity
      */
-    public void deleteQuestion(String questionId) {
-        entityManager.remove(questionId);
+    public void deleteQuestion(QuestionEntity questionEntity) {
+        entityManager.remove(questionEntity);
     }
 }

@@ -61,7 +61,7 @@ public class AnswerService {
     public void deleteAnswer(String answerId) throws AnswerNotFoundException {
         if (isAnswerExist(answerId)) {
             // There is an existing answer, deleting it
-            answerDAO.deleteAnswer(answerId);
+            answerDAO.deleteAnswer(getAnswer(answerId));
         }
     }
 
