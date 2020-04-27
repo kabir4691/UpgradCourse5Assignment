@@ -6,6 +6,7 @@ import com.upgrad.quora.service.business.QuestionService;
 import com.upgrad.quora.service.entity.QuestionEntity;
 import com.upgrad.quora.service.entity.UserAuthEntity;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
+import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,27 +22,30 @@ import java.util.UUID;
 public class QuestionController {
 
     @Autowired
-    private AuthenticationService authService;
+    private AuthenticationService authenticationService;
 
     @Autowired
     private QuestionService questionService;
 
     @RequestMapping(method = RequestMethod.POST, path = "/create", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionResponse> create(@RequestHeader("authorization") final String authorization, final QuestionRequest questionRequest) throws AuthenticationFailedException {
+    public ResponseEntity<QuestionResponse> create(@RequestHeader("authorization") final String authorization, final QuestionRequest questionRequest) throws AuthenticationFailedException, AuthorizationFailedException {
 
         String accessToken = authorization.split("Bearer")[1];
 
-        // Get Currently logged in user
-        final UserAuthEntity userAuthEntity = authService.getUserAuthEntity(accessToken);
+        // Authorize user login
+        UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
 
-        //TODO: Add validation "User is signed out.Sign in first to create an question
+        // Authorize user session
+        if (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())) {
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to post an question");
+        }
 
         // Build question entity
         QuestionEntity questionEntity = new QuestionEntity();
         questionEntity.setUuid(UUID.randomUUID().toString());
         questionEntity.setContent(questionRequest.getContent());
         questionEntity.setDate(ZonedDateTime.now());
-        questionEntity.setUserId(userAuthEntity.getUserId());
+        //questionEntity.setUserId(userAuthEntity.getUserId());
 
         final QuestionEntity questionPosted = questionService.submitQuestion(questionEntity);
         QuestionResponse questionResponse = new QuestionResponse().id(questionPosted.getUuid()).status("QUESTION CREATED");
@@ -52,10 +56,13 @@ public class QuestionController {
     public ResponseEntity<QuestionDetailsResponse> getAll(@RequestHeader("authorization") final String authorization) throws AuthenticationFailedException {
 
         String accessToken = authorization.split("Bearer")[1];
-        // Get Currently logged in user
-        final UserAuthEntity userAuthEntity = authService.getUserAuthEntity(accessToken);
+        // Authorize user login
+        UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
 
-        //TODO: Add validation "User is signed out.Sign in first to create an question
+         // Authorize user session
+        if (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())) {
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get the answers");
+        }
 
         final List<QuestionEntity> allQuestions = questionService.getAllQuestions();
 
@@ -68,12 +75,15 @@ public class QuestionController {
 
 
     @RequestMapping(method = RequestMethod.PUT, path = "/edit/{questionId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionEditResponse> edit(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId, final QuestionEditRequest questionEditRequest) throws AuthenticationFailedException, InvalidQuestionException {
+    public ResponseEntity<QuestionEditResponse> edit(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId, final QuestionEditRequest questionEditRequest) throws AuthenticationFailedException, InvalidQuestionException, AuthorizationFailedException {
         String accessToken = authorization.split("Bearer")[1];
-        // Get Currently logged in user
-        final UserAuthEntity userAuthEntity = authService.getUserAuthEntity(accessToken);
+        // Authorize user login
+        UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
 
-        //TODO: Add validation "User is signed out.Sign in first to edit question
+        // Authorize user session
+        if (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())) {
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to edit the question");
+        }
 
         // Checking the ownership of the question
         if (!questionService.isUserOwnerOfTheQuestrion(questionId, userAuthEntity.getUserId().getUuid())) {
@@ -96,13 +106,16 @@ public class QuestionController {
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/delete", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionDeleteResponse> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) throws AuthenticationFailedException, InvalidQuestionException {
+    public ResponseEntity<QuestionDeleteResponse> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) throws AuthenticationFailedException, InvalidQuestionException, AuthorizationFailedException {
 
         String accessToken = authorization.split("Bearer")[1];
-        // Get Currently logged in user
-        final UserAuthEntity userAuthEntity = authService.getUserAuthEntity(accessToken);
+        // Authorize user login
+        UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
 
-        //TODO: Add validation "User is signed out.Sign in first to edit question
+        // Authorize user session
+        if (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())) {
+            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to delete the question");
+        }
 
         // Checking the ownership of the question
         if (!questionService.isUserOwnerOfTheQuestrion(questionId, userAuthEntity.getUserId().getUuid())) {

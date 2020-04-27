@@ -11,6 +11,10 @@ import java.time.ZonedDateTime;
 
 @Entity
 @Table(name = "answer", schema = "public")
+@NamedQueries({
+        @NamedQuery(name = "answerByAnswerId", query = "select q from AnswerEntity q where q.uuid = :answerId"),
+        @NamedQuery(name = "allAnswersByQuestionId", query = "select a.uuid,a.ans,q.content from AnswerEntity a INNER JOIN QuestionEntity q on a.questionId=q.id and q.uuid= :questionId")
+})
 public class AnswerEntity implements Serializable {
 
     @Id
@@ -32,13 +36,11 @@ public class AnswerEntity implements Serializable {
     private ZonedDateTime date;
 
 
-    @NotNull
     @ManyToOne
     @JoinColumn(name = "USER_ID")
     private UserEntity userId;
 
 
-    @NotNull
     @ManyToOne
     @JoinColumn(name = "QUESTION_ID")
     private QuestionEntity questionId;

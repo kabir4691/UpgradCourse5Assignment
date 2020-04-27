@@ -1,17 +1,22 @@
 package com.upgrad.quora.service.dao;
 
 import com.upgrad.quora.service.entity.AnswerEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
+import java.util.List;
 
 @Repository
 public class AnswerDAO {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Autowired
+    private QuestionDAO questionDAO;
 
     /**
      * Creates answer for the specific question
@@ -20,15 +25,7 @@ public class AnswerDAO {
      * @return AnswerEntity
      */
     public AnswerEntity submitAnswer(AnswerEntity answerEntity) {
-        EntityTransaction transaction = entityManager.getTransaction();
-        try {
-            transaction.begin();
-            entityManager.merge(answerEntity);
-            transaction.commit();
-        } catch (Exception e) {
-            // Rollback the transaction if there are any failures
-            transaction.rollback();
-        }
+        entityManager.merge(answerEntity);
         return answerEntity;
     }
 
@@ -39,8 +36,23 @@ public class AnswerDAO {
      * @return AnswerEntity
      */
     public AnswerEntity getAnswer(String answerId) {
-        return entityManager.find(AnswerEntity.class, answerId);
+        try {
+            return entityManager.createNamedQuery("answerByAnswerId", AnswerEntity.class).setParameter("answerId", answerId).getSingleResult();
+        } catch (NoResultException nre) {
+            return null;
+        }
     }
+
+    public List<AnswerEntity> getAllAnswers(Integer questionId) {
+        try {
+           // QuestionEntity questionEntity = questionDAO.getQuestionByQuestionId(questionId);
+            //questionEntity.getContent();
+            return entityManager.createNamedQuery("allAnswersByQuestionId", AnswerEntity.class).setParameter("questionId", questionId).getResultList();
+        } catch (NoResultException nre) {
+            return null;
+        }
+    }
+
 
     /**
      * Delete answer by answer Id

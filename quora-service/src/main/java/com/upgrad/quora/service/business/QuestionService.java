@@ -5,6 +5,8 @@ import com.upgrad.quora.service.entity.QuestionEntity;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,6 +23,7 @@ public class QuestionService {
      * @param questionId
      * @return QuestionEntity
      */
+    @Transactional(propagation = Propagation.REQUIRED)
     public QuestionEntity getQuestionByQuestionId(String questionId) throws InvalidQuestionException {
         QuestionEntity questionEntity = questionDAO.getQuestionByQuestionId(questionId);
         if (questionEntity == null) {
@@ -36,6 +39,7 @@ public class QuestionService {
      * @return boolean
      * @throws InvalidQuestionException
      */
+    @Transactional(propagation = Propagation.REQUIRED)
     public boolean isQuestionExist(String questionId) {
         return questionDAO.getQuestionByQuestionId(questionId) != null;
     }
@@ -46,6 +50,7 @@ public class QuestionService {
      * @param questionEntity
      * @return QuestionEntity
      */
+    @Transactional(propagation = Propagation.REQUIRED)
     public QuestionEntity submitQuestion(QuestionEntity questionEntity) {
         return questionDAO.submitQuestion(questionEntity);
     }
@@ -55,6 +60,7 @@ public class QuestionService {
      *
      * @return List<QuestionEntity>
      */
+    @Transactional(propagation = Propagation.REQUIRED)
     public List<QuestionEntity> getAllQuestions() {
         return questionDAO.getAllQuestions();
     }
@@ -67,11 +73,13 @@ public class QuestionService {
      * @return boolean
      * @throws InvalidQuestionException
      */
+    @Transactional(propagation = Propagation.REQUIRED)
     public boolean isUserOwnerOfTheQuestrion(String questionId, String userId) throws InvalidQuestionException {
         return getQuestionByQuestionId(questionId).getUserId().getUuid().equalsIgnoreCase(userId);
     }
 
 
+    @Transactional(propagation = Propagation.REQUIRED)
     public void deleteQuestion(String questionId) throws InvalidQuestionException {
         // Checking question is existence
         if (!isQuestionExist(questionId)) {
