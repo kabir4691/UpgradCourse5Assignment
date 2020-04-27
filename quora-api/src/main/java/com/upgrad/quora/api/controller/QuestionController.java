@@ -172,7 +172,7 @@ public class QuestionController {
         } catch (AuthorizationFailedException e) {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
-            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.NOT_FOUND);
         }
 
         final List<QuestionEntity> userQuestions = questionService.getQuestionsByUser(userId);

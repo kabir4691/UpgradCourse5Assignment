@@ -46,7 +46,7 @@ public class AnswerController {
         } catch (AuthorizationFailedException e) {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
-            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.FORBIDDEN);
         }
 
         // Validate existence of question
@@ -56,7 +56,7 @@ public class AnswerController {
         } catch (InvalidQuestionException e) {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
-            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.NOT_FOUND);
         }
 
         //Build answer entity
@@ -83,7 +83,7 @@ public class AnswerController {
         } catch (AuthorizationFailedException e) {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
-            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.FORBIDDEN);
         }
 
         // Validate the ownership of the answer
@@ -106,7 +106,7 @@ public class AnswerController {
         } catch (AnswerNotFoundException e) {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
-            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.NOT_FOUND);
         }
     }
 
@@ -121,7 +121,7 @@ public class AnswerController {
         } catch (AuthorizationFailedException e) {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
-            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.FORBIDDEN);
         }
 
         // Validate the ownership of the answer
@@ -138,7 +138,7 @@ public class AnswerController {
         } catch (AnswerNotFoundException e) {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
-            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.NOT_FOUND);
         }
 
         AnswerDeleteResponse answerDeleteResponse = new AnswerDeleteResponse().id(answerId).status("ANSWER DELETED");
@@ -155,7 +155,7 @@ public class AnswerController {
         } catch (AuthorizationFailedException e) {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
-            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.FORBIDDEN);
         }
 
         final QuestionEntity questionEntity;
@@ -167,7 +167,7 @@ public class AnswerController {
             InvalidQuestionException e2 = new InvalidQuestionException("QUES-001", "The question with entered uuid whose details are to be seen does not exist");
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e2.getCode()).message(e2.getErrorMessage()).rootCause(e2.getErrorMessage());
-            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.NOT_FOUND);
         }
 
         List<AnswerDetailsResponse> answerResponse = new ArrayList<AnswerDetailsResponse>();

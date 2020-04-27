@@ -51,7 +51,7 @@ public class UserController {
         } catch (SignUpRestrictedException e) {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
-            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.FORBIDDEN);
+            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.CONFLICT);
         }
 
         SignupUserResponse userResponse = new SignupUserResponse().id(createdUserEntity.getUuid()).status("USER SUCCESSFULLY REGISTERED");
