@@ -65,9 +65,6 @@ public class AnswerController {
 
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
 
-        // Validate existence of an answer
-        answerService.isAnswerExist(answerId);
-
         // Validate the ownership of the answer
         if (!answerService.isUserOwnerOfTheAnswer(answerId, userAuthEntity.getUserId().getUuid())) {
             throw new AuthorizationFailedException("ATHR-003", "Only the answer owner can edit the answer");
@@ -90,9 +87,6 @@ public class AnswerController {
         String accessToken = authorization.split("Bearer ")[1];
 
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
-
-        // Validate existence of an answer
-        answerService.isAnswerExist(answerId);
 
         // Validate the ownership of the answer
         if (!answerService.isUserOwnerOfTheAnswer(answerId, userAuthEntity.getUserId().getUuid())) {
