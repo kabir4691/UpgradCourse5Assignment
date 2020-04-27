@@ -43,12 +43,7 @@ public class AnswerController {
 
         String accessToken = authorization.split("Bearer ")[1];
 
-        // Authorize user login
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
-
-        if (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())) {
-            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to post an answer");
-        }
 
         //Build answer entity
         final AnswerEntity answerEntity = new AnswerEntity();
@@ -68,13 +63,7 @@ public class AnswerController {
 
         String accessToken = authorization.split("Bearer ")[1];
 
-        // Authorize user login
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
-
-        // Authorize user session
-        if (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())) {
-            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to edit the answer");
-        }
 
         // Validate existence of an answer
         answerService.isAnswerExist(answerId);
@@ -100,13 +89,7 @@ public class AnswerController {
 
         String accessToken = authorization.split("Bearer ")[1];
 
-        // Authorize user login
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
-
-        // Authorize user session
-        if (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())) {
-            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to delete the answer");
-        }
 
         // Validate existence of an answer
         answerService.isAnswerExist(answerId);
@@ -127,13 +110,7 @@ public class AnswerController {
 
         String accessToken = authorization.split("Bearer ")[1];
 
-        // Authorize user login
-        UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
-
-        // Authorize user session
-        if (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())) {
-            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get all the answers");
-        }
+        authenticationService.authorizeUserLogedin(accessToken);
 
         // Verify existence of question in the database
         if (!questionService.isQuestionExist(questionId)) {
