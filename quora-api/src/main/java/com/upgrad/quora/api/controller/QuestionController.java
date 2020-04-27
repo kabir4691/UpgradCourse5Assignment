@@ -57,7 +57,7 @@ public class QuestionController {
     @RequestMapping(method = RequestMethod.GET, path = "/all", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<List<QuestionDetailsResponse>> getAll(@RequestHeader("authorization") final String authorization) throws AuthenticationFailedException, AuthorizationFailedException {
 
-        String accessToken = authorization.split("Bearer")[1];
+        String accessToken = authorization.split("Bearer ")[1];
         // Authorize user login
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
 
@@ -80,7 +80,7 @@ public class QuestionController {
 
     @RequestMapping(method = RequestMethod.PUT, path = "/edit/{questionId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<QuestionEditResponse> edit(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId, final QuestionEditRequest questionEditRequest) throws AuthenticationFailedException, InvalidQuestionException, AuthorizationFailedException {
-        String accessToken = authorization.split("Bearer")[1];
+        String accessToken = authorization.split("Bearer ")[1];
         // Authorize user login
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
 
@@ -112,7 +112,7 @@ public class QuestionController {
     @RequestMapping(method = RequestMethod.DELETE, path = "/delete", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<QuestionDeleteResponse> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) throws AuthenticationFailedException, InvalidQuestionException, AuthorizationFailedException {
 
-        String accessToken = authorization.split("Bearer")[1];
+        String accessToken = authorization.split("Bearer ")[1];
         // Authorize user login
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
 
@@ -136,7 +136,7 @@ public class QuestionController {
     public ResponseEntity<List<QuestionDetailsResponse>> getAllByUser(@RequestHeader("authorization") final String authorization, @RequestParam(name = "userId") final String userId) throws AuthorizationFailedException {
 
 
-        String accessToken = authorization.split("Bearer")[1];
+        String accessToken = authorization.split("Bearer ")[1];
         // Authorize user login
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
 
