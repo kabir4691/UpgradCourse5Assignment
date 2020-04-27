@@ -66,7 +66,7 @@ public class AnswerController {
     @RequestMapping(method = RequestMethod.PUT, path = "/answer/edit/{answerId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<AnswerEditResponse> update(@RequestHeader("authorization") final String authorization, @RequestParam(name = "answerId") final String answerId, final AnswerEditRequest answerEditRequest) throws AuthorizationFailedException, AnswerNotFoundException {
 
-        String accessToken = authorization.split("Bearer")[1];
+        String accessToken = authorization.split("Bearer ")[1];
 
         // Authorize user login
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
@@ -98,7 +98,7 @@ public class AnswerController {
     @RequestMapping(method = RequestMethod.DELETE, path = "/answer/delete/{answerId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<AnswerDeleteResponse> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "answerId") final String answerId) throws AnswerNotFoundException, AuthorizationFailedException, AuthenticationFailedException {
 
-        String accessToken = authorization.split("Bearer")[1];
+        String accessToken = authorization.split("Bearer ")[1];
 
         // Authorize user login
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
@@ -125,7 +125,7 @@ public class AnswerController {
     @RequestMapping(method = RequestMethod.GET, path = "/answer/all/{questionId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<List<AnswerDetailsResponse>> getAllAnswers(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) throws InvalidQuestionException, AuthorizationFailedException {
 
-        String accessToken = authorization.split("Bearer")[1];
+        String accessToken = authorization.split("Bearer ")[1];
 
         // Authorize user login
         UserAuthEntity userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
