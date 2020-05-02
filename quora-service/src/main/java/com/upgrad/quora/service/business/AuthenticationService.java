@@ -6,7 +6,6 @@ import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.SignOutRestrictedException;
-import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -101,17 +100,34 @@ public class AuthenticationService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public UserAuthEntity authorizeUserLogedin(final String accessToken) throws AuthorizationFailedException {
+    public UserAuthEntity authorizeUserLoggedin(final String accessToken, String operationType, String actionType) throws AuthorizationFailedException {
         UserAuthEntity userAuthEntity = userDao.getUserAuth(accessToken);
         // Authorize user login
         if (userAuthEntity == null) {
-            throw new AuthorizationFailedException("SGR-001", "User is not Signed in");
+            throw new AuthorizationFailedException("ATHR-001", "User has not Signed in");
         }
         // Authorize user session
         if (userAuthEntity.getLogoutAt() != null && userAuthEntity.getLoginAt() != null && userAuthEntity.getLogoutAt().isAfter(userAuthEntity.getLoginAt())) {
-            throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to post an question");
+            if(actionType.equals("QUESTION")){
+                if(operationType.equals("CREATE"))
+                    throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to post a question");
+                else if(operationType.equals("EDIT"))
+                    throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to edit the question");
+                else if(operationType.equals("DELETE"))
+                    throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to delete a question");
+                else if(operationType.equals("GET"))
+                    throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get all questions posted by a specific user");
+            } else if(actionType.equals("ANSWER")){
+                if(operationType.equals("CREATE"))
+                    throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to post an answer");
+                else if(operationType.equals("EDIT"))
+                    throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to edit an answer");
+                else if(operationType.equals("DELETE"))
+                    throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to delete an answer");
+                else if(operationType.equals("GET"))
+                    throw new AuthorizationFailedException("ATHR-002", "User is signed out.Sign in first to get the answers");
+            }
         }
-
         return userAuthEntity;
     }
 

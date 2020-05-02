@@ -34,15 +34,21 @@ public class AnswerController {
     @Autowired
     private AuthenticationService authenticationService;
 
+    private static String GET = "GET";
+    private static String CREATE = "CREATE";
+    private static String EDIT = "EDIT";
+    private static String DELETE = "DELETE";
+
+    private static String ANSWER = "ANSWER";
 
     @RequestMapping(method = RequestMethod.POST, path = "/question/{questionId}/answer/create", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<?> create(@RequestHeader("authorization") final String authorization, @RequestParam(name = "question_id") final String questionId, final AnswerRequest answerRequest) {
+    public ResponseEntity<?> create(@RequestHeader("authorization") final String authorization, @PathVariable(name = "questionId") final String questionId, final AnswerRequest answerRequest) throws AuthorizationFailedException, InvalidQuestionException{
 
         String accessToken = authorization;
 
         UserAuthEntity userAuthEntity;
         try {
-            userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
+            userAuthEntity = authenticationService.authorizeUserLoggedin(accessToken,CREATE,ANSWER);
         } catch (AuthorizationFailedException e) {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
@@ -52,7 +58,7 @@ public class AnswerController {
         // Validate existence of question
         final QuestionEntity questionEntity;
         try {
-            questionEntity = questionService.getQuestionByQuestionId(questionId);
+            questionEntity = questionService.getQuestionByQuestionId(questionId,"ANSWER");
         } catch (InvalidQuestionException e) {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
@@ -73,13 +79,13 @@ public class AnswerController {
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "/answer/edit/{answerId}", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<?> update(@RequestHeader("authorization") final String authorization, @RequestParam(name = "answerId") final String answerId, final AnswerEditRequest answerEditRequest)  {
+    public ResponseEntity<?> update(@RequestHeader("authorization") final String authorization, @PathVariable(name = "answerId") final String answerId, final AnswerEditRequest answerEditRequest) throws AuthorizationFailedException, AnswerNotFoundException {
 
         String accessToken = authorization;
 
         UserAuthEntity userAuthEntity;
         try {
-            userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
+            userAuthEntity = authenticationService.authorizeUserLoggedin(accessToken,EDIT,ANSWER);
         } catch (AuthorizationFailedException e) {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
@@ -111,13 +117,13 @@ public class AnswerController {
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/answer/delete/{answerId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<?> delete(@RequestHeader("authorization") final String authorization, @RequestParam(name = "answerId") final String answerId) {
+    public ResponseEntity<?> delete(@RequestHeader("authorization") final String authorization, @PathVariable(name = "answerId") final String answerId) throws AuthorizationFailedException, AnswerNotFoundException{
 
         String accessToken = authorization;
 
         UserAuthEntity userAuthEntity;
         try {
-            userAuthEntity = authenticationService.authorizeUserLogedin(accessToken);
+            userAuthEntity = authenticationService.authorizeUserLoggedin(accessToken,DELETE,ANSWER);
         } catch (AuthorizationFailedException e) {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
@@ -146,38 +152,36 @@ public class AnswerController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/answer/all/{questionId}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<?> getAllAnswers(@RequestHeader("authorization") final String authorization, @RequestParam(name = "questionId") final String questionId) {
+    public ResponseEntity<?> getAllAnswers(@RequestHeader("authorization") final String authorization, @PathVariable(name = "questionId") final String questionId) throws AuthorizationFailedException, InvalidQuestionException{
 
         String accessToken = authorization;
 
         try {
-            authenticationService.authorizeUserLogedin(accessToken);
+            authenticationService.authorizeUserLoggedin(accessToken,GET,ANSWER);
+            final QuestionEntity questionEntity;
+            List<AnswerEntity> allAnswers;
+            try {
+                questionEntity = questionService.getQuestionByQuestionId(questionId,"ANSWER");
+                allAnswers = answerService.getAllAnswers(questionId);
+            } catch (InvalidQuestionException e) {
+                ErrorResponse errorResponse = new ErrorResponse();
+                errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
+                return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.NOT_FOUND);
+            }
+
+            List<AnswerDetailsResponse> answerResponse = new ArrayList<AnswerDetailsResponse>();
+            for (AnswerEntity answer : allAnswers) {
+                AnswerDetailsResponse answerDetailsResponse = new AnswerDetailsResponse();
+                answerDetailsResponse.setAnswerContent(answer.getAns());
+                answerDetailsResponse.setQuestionContent(questionEntity.getContent());
+                answerDetailsResponse.setId(answer.getUuid());
+                answerResponse.add(answerDetailsResponse);
+            }
+            return new ResponseEntity<List<AnswerDetailsResponse>>(answerResponse, HttpStatus.OK);
         } catch (AuthorizationFailedException e) {
             ErrorResponse errorResponse = new ErrorResponse();
             errorResponse.code(e.getCode()).message(e.getErrorMessage()).rootCause(e.getErrorMessage());
             return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.FORBIDDEN);
         }
-
-        final QuestionEntity questionEntity;
-        List<AnswerEntity> allAnswers;
-        try {
-            questionEntity = questionService.getQuestionByQuestionId(questionId);
-            allAnswers = answerService.getAllAnswers(questionId);
-        } catch (InvalidQuestionException e) {
-            InvalidQuestionException e2 = new InvalidQuestionException("QUES-001", "The question with entered uuid whose details are to be seen does not exist");
-            ErrorResponse errorResponse = new ErrorResponse();
-            errorResponse.code(e2.getCode()).message(e2.getErrorMessage()).rootCause(e2.getErrorMessage());
-            return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.NOT_FOUND);
-        }
-
-        List<AnswerDetailsResponse> answerResponse = new ArrayList<AnswerDetailsResponse>();
-        for (AnswerEntity answer : allAnswers) {
-            AnswerDetailsResponse answerDetailsResponse = new AnswerDetailsResponse();
-            answerDetailsResponse.setAnswerContent(answer.getAns());
-            answerDetailsResponse.setQuestionContent(questionEntity.getContent());
-            answerDetailsResponse.setId(answer.getUuid());
-            answerResponse.add(answerDetailsResponse);
-        }
-        return new ResponseEntity<List<AnswerDetailsResponse>>(answerResponse, HttpStatus.OK);
     }
 }
