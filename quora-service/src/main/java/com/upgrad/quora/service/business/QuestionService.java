@@ -1,8 +1,11 @@
 package com.upgrad.quora.service.business;
 
 import com.upgrad.quora.service.dao.QuestionDAO;
+import com.upgrad.quora.service.dao.UserDao;
 import com.upgrad.quora.service.entity.QuestionEntity;
+import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
+import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -16,6 +19,8 @@ public class QuestionService {
     @Autowired
     private QuestionDAO questionDAO;
 
+    @Autowired
+    private UserDao userDao;
 
     /**
      * Returns QuestionEntity by question ID
@@ -24,10 +29,13 @@ public class QuestionService {
      * @return QuestionEntity
      */
     @Transactional(propagation = Propagation.REQUIRED)
-    public QuestionEntity getQuestionByQuestionId(String questionId) throws InvalidQuestionException {
+    public QuestionEntity getQuestionByQuestionId(String questionId, String actionType) throws InvalidQuestionException {
         QuestionEntity questionEntity = questionDAO.getQuestionByQuestionId(questionId);
         if (questionEntity == null) {
-            throw new InvalidQuestionException("QUES-001", "The question entered is invalid");
+            if(actionType.equals("QUESTION"))
+                throw new InvalidQuestionException("QUES-001", "Entered question uuid does not exist");
+            else if(actionType.equals("ANSWER"))
+                throw new InvalidQuestionException("QUES-001", "The question entered is invalid");
         }
         return questionEntity;
     }
@@ -74,8 +82,8 @@ public class QuestionService {
      * @throws InvalidQuestionException
      */
     @Transactional(propagation = Propagation.REQUIRED)
-    public boolean isUserOwnerOfTheQuestrion(String questionId, String userId) throws InvalidQuestionException {
-        return getQuestionByQuestionId(questionId).getUserId().getUuid().equalsIgnoreCase(userId);
+    public boolean isUserOwnerOfTheQuestion(String questionId, String userId) throws InvalidQuestionException {
+        return getQuestionByQuestionId(questionId, "QUESTION").getUserId().getUuid().equalsIgnoreCase(userId);
     }
 
 
@@ -91,7 +99,7 @@ public class QuestionService {
         if (!isQuestionExist(questionId)) {
             throw new InvalidQuestionException("QUES-001", "Entered question uuid does not exist");
         }
-        QuestionEntity questionEntity = getQuestionByQuestionId(questionId);
+        QuestionEntity questionEntity = getQuestionByQuestionId(questionId,"QUESTION");
         questionDAO.deleteQuestion(questionEntity);
     }
 
@@ -104,5 +112,14 @@ public class QuestionService {
     @Transactional(propagation = Propagation.REQUIRED)
     public List<QuestionEntity> getQuestionsByUser(String userId) {
         return questionDAO.getQuestionsByUser(userId);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void getUserByID(final String userUuid) throws UserNotFoundException {
+        UserEntity signedInuser = userDao.getUserByID(userUuid);
+        if (signedInuser == null) {
+            //UserNotFoundException is thrown if the user with uuid whose profile is to be deleted does not exist in the database
+            throw new UserNotFoundException("USR-001", "User with entered uuid whose question details are to be seen does not exist");
+        }
     }
 }

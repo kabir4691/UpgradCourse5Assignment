@@ -73,7 +73,7 @@ public class AnswerService {
 
     @Transactional(propagation = Propagation.REQUIRED)
     public List<AnswerEntity> getAllAnswers(String questionId) throws InvalidQuestionException {
-        QuestionEntity questionEntity = questionService.getQuestionByQuestionId(questionId);
+        QuestionEntity questionEntity = questionService.getQuestionByQuestionId(questionId, "ANSWER");
         return answerDAO.getAllAnswers(questionEntity.getId());
     }
 }
